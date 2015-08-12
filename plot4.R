@@ -1,29 +1,62 @@
-dataFile <- ""C:/Users/noorazah.mampu/Desktop/ExData_Plotting1/household_power_consumption.txt"
-data <- read.table(dataFile, header=TRUE, sep=";", stringsAsFactors=FALSE, dec=".")
-subSetData <- data[data$Date %in% c("1/2/2007","2/2/2007") ,]
 
-#str(subSetData)
-datetime <- strptime(paste(subSetData$Date, subSetData$Time, sep=" "), "%d/%m/%Y %H:%M:%S") 
-globalActivePower <- as.numeric(subSetData$Global_active_power)
-globalReactivePower <- as.numeric(subSetData$Global_reactive_power)
-voltage <- as.numeric(subSetData$Voltage)
-subMetering1 <- as.numeric(subSetData$Sub_metering_1)
-subMetering2 <- as.numeric(subSetData$Sub_metering_2)
-subMetering3 <- as.numeric(subSetData$Sub_metering_3)
+zip_file  <- "exdata-data-household_power_consumption.zip"
+text_file <- "household_power_consumption.txt"
+colClasses <- c("character","character",rep("numeric",7)) 
+df <- read.csv(unz(zip_file, text_file), header = TRUE, sep = ";", na.strings="?", colClasses=colClasses)
+df$DateTime <- strptime(paste(df$Date, df$Time), "%d/%m/%Y %H:%M")
+df$Date = as.Date(df$Date, "%d/%m/%Y")
+df <- df[df$Date >= as.Date("2007/02/01") & df$Date <= as.Date("2007/02/02"),]
+
+par(mfrow = c(2,2))
+
+#FIRST PLOT
+
+title_label = ""
+x_label = ""
+y_label = "Global Active Power (kilowatts)"
+
+with(df, plot(1:length(Date), Global_active_power, type="l", xlab=x_label,ylab=y_label,xaxt="n"))
+
+axis(1,at=c(0,length(df$Date)/2,length(df$Date)),labels=c("Thu","Fri","Sat"))
+
+#SECOND PLOT
+
+x_label = "datetime"
+y_label = "Voltage"
+
+with(df, plot(1:length(Date), Voltage, type="l", xlab=x_label,ylab=y_label,xaxt="n"))
+
+axis(1,at=c(0,length(df$Date)/2,length(df$Date)),labels=c("Thu","Fri","Sat"))
+
+#THIRD PLOT
+
+title_label = ""
+x_label = ""
+y_label = "Energy sub metering"
+
+with(df, plot(1:length(Date), df$Sub_metering_1, type="l", xlab=x_label,ylab=y_label,xaxt="n",col="black")
+)
+
+with(df, lines(1:length(Date), df$Sub_metering_2, type="l", xlab=x_label,ylab=y_label,xaxt="n",col="red")
+)
+
+with(df, lines(1:length(Date), df$Sub_metering_3, type="l", xlab=x_label,ylab=y_label,xaxt="n",col="blue")
+)
+
+# add x vs. 1/x 
+#lines(x, z, type="b", pch=22, col="blue", lty=2)
+
+axis(1,at=c(0,length(df$Date)/2,length(df$Date)),labels=c("Thu","Fri","Sat"))
+
+legend("topright", lty = 1, col = c("black", "red", "blue"), legend = c("Sub_metering_1", "Sub_metering_2","Sub_metering_3"), bty = "n")
 
 
-png("plot4.png", width=480, height=480)
-par(mfrow = c(2, 2)) 
+#FOURTH PLOT
+y_label = "Global_reactive_power"
+x_label = "datetime"
+with(df, plot(1:length(Date), Global_reactive_power, type="l",  xlab=x_label,ylab=y_label,xaxt="n"))
 
-plot(datetime, globalActivePower, type="l", xlab="", ylab="Global Active Power", cex=0.2)
+axis(1,at=c(0,length(df$Date)/2,length(df$Date)),labels=c("Thu","Fri","Sat"))
 
-plot(datetime, voltage, type="l", xlab="datetime", ylab="Voltage")
-
-plot(datetime, subMetering1, type="l", ylab="Energy sub metering", xlab="")
-lines(datetime, subMetering2, type="l", col="red")
-lines(datetime, subMetering3, type="l", col="blue")
-legend("topright", c("Sub_metering_1", "Sub_metering_2", "Sub_metering_3"), lty=, lwd=2.5, col=c("black", "red", "blue"), bty="o")
-
-plot(datetime, globalReactivePower, type="l", xlab="datetime", ylab="Global_reactive_power")
-
+dev.copy(png,"plot4.png",width=480,height=480)
 dev.off()

@@ -1,18 +1,19 @@
-## Getting full dataset
-data_full <- read.csv("C:/Users/noorazah.mampu/Desktop/ExData_Plotting1/household_power_consumption.txt", header=T, sep=';', na.strings="?", 
-                      nrows=2075259, check.names=F, stringsAsFactors=F, comment.char="", quote='\"')
-data_full$Date <- as.Date(data_full$Date, format="%d/%m/%Y")
+zip_file  <- "exdata-data-household_power_consumption.zip"
+text_file <- "household_power_consumption.txt"
+colClasses <- c("character","character",rep("numeric",7)) 
+df <- read.csv(unz(zip_file, text_file), header = TRUE, sep = ";", na.strings="?", colClasses=colClasses)
+df$DateTime <- strptime(paste(df$Date, df$Time), "%d/%m/%Y %H:%M")
+df$Date = as.Date(df$Date, "%d/%m/%Y")
+df <- df[df$Date >= as.Date("2007/02/01") & df$Date <= as.Date("2007/02/02"),]
 
-## Subsetting the data
-data <- subset(data_full, subset=(Date >= "2007-02-01" & Date <= "2007-02-02"))
-rm(data_full)
 
-## Converting dates
-datetime <- paste(as.Date(data$Date), data$Time)
-data$Datetime <- as.POSIXct(datetime)
+title_label = ""
+x_label = ""
+y_label = "Global Active Power (kilowatts)"
 
-## Plot 2
-plot(data$Global_active_power~data$Datetime, type="l",
-     ylab="Global Active Power (kilowatts)", xlab="")
-dev.copy(png, file="plot2.png", height=480, width=480)
+with(df, plot(1:length(Date), Global_active_power, type="l",xlab=x_label,ylab=y_label,xaxt="n"))
+
+axis(1,at=c(0,length(df$Date)/2,length(df$Date)),labels=c("Thu","Fri","Sat"))
+
+dev.copy(png,"plot2.png",width=480,height=480)
 dev.off()
